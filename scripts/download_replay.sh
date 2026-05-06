@@ -13,9 +13,18 @@ command -v ffmpeg >/dev/null 2>&1 || {
   echo "❌ 需要安装 ffmpeg: brew install ffmpeg"
   exit 1
 }
+command -v ffprobe >/dev/null 2>&1 || {
+  echo "❌ 需要安装 ffprobe: brew install ffmpeg"
+  exit 1
+}
+
+if [[ ! "$M3U8_URL" =~ ^https?:// ]]; then
+  echo "❌ M3U8 URL 必须以 http:// 或 https:// 开头"
+  exit 1
+fi
 
 # 检查磁盘空间 (至少 5GB)
-AVAIL=$(df -g . | awk 'NR==2 {print $4}')
+AVAIL=$(df -Pk . | awk 'NR==2 {print int($4 / 1024 / 1024)}')
 if [ "$AVAIL" -lt 5 ]; then
   echo "⚠️  可用磁盘空间不足 5GB (当前: ${AVAIL}GB)"
   echo "   继续下载可能导致失败"
@@ -27,6 +36,10 @@ if [ "$AVAIL" -lt 5 ]; then
 fi
 
 OUTPUT_FILE="${OUTPUT}.mp4"
+OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
+if [ "$OUTPUT_DIR" != "." ]; then
+  mkdir -p "$OUTPUT_DIR"
+fi
 
 echo "📥 开始下载..."
 echo "   URL: ${M3U8_URL}"

@@ -15,13 +15,47 @@ command -v ffmpeg >/dev/null 2>&1 || {
   echo "❌ 需要安装 ffmpeg"
   exit 1
 }
+command -v ffprobe >/dev/null 2>&1 || {
+  echo "❌ 需要安装 ffprobe"
+  exit 1
+}
+command -v bc >/dev/null 2>&1 || {
+  echo "❌ 需要安装 bc"
+  exit 1
+}
+
+if [ ! -f "$INPUT" ]; then
+  echo "❌ 输入视频不存在: ${INPUT}"
+  exit 1
+fi
+
+if ! ffprobe -v error -select_streams a:0 -show_entries stream=index -of csv=p=0 "${INPUT}" | grep -q .; then
+  echo "❌ 输入视频没有音轨。当前脚本需要音轨来同步慢动作。"
+  echo "   可先添加静音音轨，或改用仅视频处理流程。"
+  exit 1
+fi
 
 # 获取视频时长
 TOTAL_DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "${INPUT}")
 END_TIME=$(printf "%.1f" "$TOTAL_DUR")
 
+if awk -v start="$SLOW_START" -v end="$SLOW_END" -v total="$TOTAL_DUR" 'BEGIN { exit !(start < 0 || end <= start || end > total) }'; then
+  echo "❌ 慢放区间无效。要求 0 <= slow_start < slow_end <= 视频时长"
+  exit 1
+fi
+
 # 计算 atempo (不能超过 2.0，否则需要链式)
 ATEMPO=$(echo "scale=4; 1.0 / ${SLOMO}" | bc)
+if awk -v atempo="$ATEMPO" 'BEGIN { exit !(atempo < 0.5 || atempo > 2.0) }'; then
+  echo "❌ 当前慢放倍率对应 atempo=${ATEMPO}，超出 ffmpeg 单个 atempo filter 的 0.5-2.0 范围"
+  echo "   请使用 0.5x 到 2.0x 范围内的慢放倍率，或手动链式 atempo。"
+  exit 1
+fi
+
+OUTPUT_DIR=$(dirname "$OUTPUT")
+if [ "$OUTPUT_DIR" != "." ]; then
+  mkdir -p "$OUTPUT_DIR"
+fi
 
 echo "🎬 三段式慢放 + 竖屏转换..."
 echo "   源文件: ${INPUT}"

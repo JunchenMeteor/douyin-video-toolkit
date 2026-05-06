@@ -1,86 +1,54 @@
-# BGM 资源库
+# BGM 资源策略
 
-推荐用于抖音游戏搞笑视频的 BGM 列表和下载源。
+本工具包默认优先使用抖音平台自己的音乐库或抖音创作者中心可选音乐。
 
----
+不要默认推荐从第三方网站下载 BGM。只有在用户明确说明已获得授权时，才使用外部音频文件。
 
-## 推荐 BGM
+## 推荐来源
 
-### 游戏搞笑/翻车
+### 抖音平台内音乐
 
-| 曲名 | 作者 | 风格 | 来源 | 时长 |
-|------|------|------|------|------|
-| 猪突猛進 | 百石元 | 搞笑/轻松/中二 | 汽水音乐 | ~90s |
-| Fluffing a Duck | Kevin MacLeod | 滑稽/轻快 | YouTube Audio Library | ~60s |
-| Monkeys Spinning Monkeys | Kevin MacLeod | 欢快/搞笑 | YouTube Audio Library | ~2min |
-| Scheming Weasel | Kevin MacLeod | 狡黠/快节奏 | YouTube Audio Library | ~1min |
+优先从以下位置选择：
 
-### 动作/战斗高光
+1. 抖音创作者中心上传页内的音乐选择能力
+2. 抖音 App 内视频关联音乐
+3. 抖音/汽水音乐生态中明确可用于创作的视频音乐
 
-| 曲名 | 来源 | 风格 |
-|------|------|------|
-| 進撃の巨人 OST | 动漫 | 燃/史诗 |
-| Unravel (Tokyo Ghoul) | 动漫 | 燃/悲伤 |
-| 各种 BOSS 战 BGM | 魔兽世界 OST | 史诗/战斗 |
+发布前仍应以平台页面提示为准。平台内可用音乐可能受地区、账号类型、商业化场景或内容类型限制。
 
----
+## Agent 处理规则
 
-## 下载源
+当用户要求添加 BGM：
 
-### 抖音生态内（推荐，无版权风险）
+1. 优先询问或确认用户要使用哪首抖音平台内音乐。
+2. 如果用户没有指定音乐，建议在抖音创作者中心上传草稿后，通过平台音乐选择器挑选。
+3. 如果用户提供本地音频文件，先确认用户拥有使用权或已获得授权。
+4. 不要主动从第三方网站下载音乐。
+5. 不要声称某首音乐“无版权风险”；只能说明“按平台提示确认可用后再发布”。
 
-1. 抖音搜索：搜索"搞笑游戏BGM"找推荐视频
-2. 汽水音乐：抖音视频左下角"汽水音乐"链接
-3. 直接下载链接通常有时效性，需要实时抓取
+## 混音建议
 
-### 开源/免费音乐库
+如果用户提供了已授权的本地 BGM 文件，可以用脚本混音：
 
-| 平台 | URL | 特点 |
-|------|-----|------|
-| YouTube Audio Library | youtube.com/audiolibrary | 完全免费，可商用 |
-| Pixabay Music | pixabay.com/music | 免费可商用，但有 Cloudflare 防护 |
-| Freesound | freesound.org | CC 协议，质量参差 |
-| 甘茶の音楽工房 | amachamusic.chagasi.com | 日系音乐，免费用 |
-
-### 技术方案
-
-1. **yt-dlp**（如 Python 环境可用）：
 ```bash
-yt-dlp -x --audio-format mp3 --audio-quality 320K "URL"
+./scripts/add_bgm.sh video.mp4 bgm.mp3 0.25 59 3.5 output.mp4
 ```
 
-2. **直接 curl 下载**（直链有效期内）：
-```bash
-curl -L -o bgm.mp3 "DIRECT_URL"
+Windows PowerShell：
+
+```powershell
+.\scripts\add_bgm.ps1 -Video video.mp4 -Bgm bgm.mp3 -Volume 0.25 -FadeStart 59 -FadeDuration 3.5 -Output output.mp4
 ```
 
-3. **录屏提取**（最后手段，质量损失大）
+参数建议：
 
----
+- BGM 音量从 `0.20` 到 `0.35` 之间试起，避免压过原声。
+- 优先选择中高频清晰的音乐，手机扬声器更容易听清。
+- 在最终发布前，用手机外放试听一遍。
 
-## BGM 选择原则
+## 不建议
 
-1. **抖音生态优先**：汽水音乐/抖音热门BGM 无版权风险
-2. **避免人声**：纯器乐/电子，不抢话语
-3. **高频突出**：手机扬声器可听范围
-4. **情绪匹配**：搞笑场景用轻快/滑稽，战斗场景用燃/史诗
-5. **320kbps MP3 足够**：手机播放不需要无损
-
----
-
-## 处理技巧
-
-1. **截取高潮段**：
-```bash
-ffmpeg -i bgm.mp3 -ss 10 -t 60 bgm_clip.mp3
-```
-
-2. **调整音量**：
-```bash
-ffmpeg -i bgm.mp3 -af "volume=0.3" bgm_quiet.mp3
-```
-
-3. **添加淡入淡出**：
-```bash
-ffmpeg -i bgm.mp3 -af "afade=t=in:d=1.5,afade=t=out:st=58.5:d=3.5" bgm_fade.mp3
-```
+- 不建议从不明来源下载音乐。
+- 不建议使用无法确认授权范围的影视、动漫、游戏 OST。
+- 不建议把第三方音乐文件提交到仓库。
+- 不建议把 BGM 下载链接写入公开文档或日志。

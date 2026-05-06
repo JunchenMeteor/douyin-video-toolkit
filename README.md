@@ -1,155 +1,231 @@
-# 🎬 抖音视频二创工具包
+# Douyin Video Toolkit
 
-从**抖音直播回放下载**到**短视频二创发布**的全流程自动化工具包。
+[简体中文](README.zh-CN.md)
 
-一键提取 M3U8 → 裁剪高光片段 → 竖屏转换 → 慢动作特效 → 字幕烧录 → BGM 混音 → 发布抖音。
+An OpenClaw skill and FFmpeg toolkit for turning Douyin live replay footage into short vertical videos.
 
----
+The toolkit covers the practical workflow from replay capture to edited output: M3U8 replay download, highlight clipping, 9:16 vertical conversion, slow-motion effects, ASS subtitle burn-in, BGM mixing, and preparation for upload in Douyin Creator Center.
 
-## 什么情况下用？
+Important: the skill can automate upload preparation with browser automation, but it must stop before the final publish action. It can open Douyin Creator Center, upload the video, fill draft fields, wait for platform checks, and report the page state. It must not click the final publish button. The creator should review the video, title, tags, visibility, and checks before publishing.
 
-- 你开了抖音直播，想把精彩片段剪成短视频发出去
-- 游戏直播翻车/高光时刻需要慢放 + 字幕 + BGM 加工
-- 需要从创作者后台下载直播回放（抖音官方不提供下载按钮）
+## Use Cases
 
----
+- Download a Douyin live replay that belongs to you or that you are authorized to process.
+- Cut gaming livestream highlights, fails, or reaction moments into short videos.
+- Convert landscape replay footage into Douyin-friendly 1080x1920 vertical output.
+- Add slow motion, subtitles, and background music using repeatable FFmpeg commands.
+- Prepare a video draft in Douyin Creator Center for final human review.
 
-## 安装
+## Requirements
 
-### 方式一：OpenClaw SkillHub 安装（推荐）
+- macOS, Linux, or Windows PowerShell environment.
+- `ffmpeg` and `ffprobe`.
+- `bc` for numeric calculations in the Bash slow-motion script.
+- FFmpeg with useful filters such as `tmix`, `drawtext`, `afade`, and preferably `ass`/`subtitles` for ASS subtitle burn-in.
+- OpenClaw with an `xbrowser`-style browser automation skill if you want agent-assisted Creator Center preparation.
 
-```
-安装 douyin-video-toolkit skill
-```
-
-### 方式二：手动安装
+Run the environment check:
 
 ```bash
-# 克隆到 OpenClaw 技能目录
-git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.qclaw/skills/douyin-video-toolkit
+./scripts/check_env.sh
+```
 
-# 重启 OpenClaw Gateway
+On Windows PowerShell:
+
+```powershell
+.\scripts\check_env.ps1
+```
+
+## Installation
+
+### OpenClaw
+
+```text
+Install the douyin-video-toolkit skill
+```
+
+If you prefer manual installation:
+
+```bash
+git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.qclaw/skills/douyin-video-toolkit
 openclaw gateway restart
 ```
 
-### 前置依赖
+### Codex
 
-- **ffmpeg**（需支持 libass）：`brew install ffmpeg`
-- **OpenClaw** + **xbrowser skill**（用于浏览器自动化操作）
-
----
-
-## 快速开始
-
-在 OpenClaw 对话中直接说：
-
-> 「帮我把昨晚的抖音直播回放下载下来」
-
-或更具体的：
-
-> 「下载这场直播回放，然后裁剪 1小时21分 附近的高光片段，做成竖屏短视频，加慢动作和字幕」
-
-AI 会自动按照以下流程执行：
-
-```
-Step 1 → 直播回放下载（提取 M3U8 → ffmpeg codec copy）
-Step 2 → 音频分析定位高光（静音检测 + 响度分析）
-Step 3 → 片段剪辑（精确裁剪）
-Step 4 → 竖屏转换（16:9 → 9:16，模糊背景填充）
-Step 5 → 慢动作特效（tmix 帧混合，三段式拼接）
-Step 6 → ASS 字幕烧录
-Step 7 → BGM 混音（淡入淡出）
-Step 8 → 浏览器自动发布到抖音创作者后台
-```
-
----
-
-## 脚本速查
-
-所有脚本在 `scripts/` 目录，可直接命令行使用：
+Clone this repository into your Codex skills directory:
 
 ```bash
-# 下载直播回放
-./scripts/download_replay.sh "https://...m3u8" "我的直播"
+git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.codex/skills/douyin-video-toolkit
+```
 
-# 提取片段
+Then invoke it explicitly when needed:
+
+```text
+Use $douyin-video-toolkit to process an authorized Douyin replay into a vertical short-video draft. Stop before final publish.
+```
+
+The Codex UI metadata lives in:
+
+```text
+agents/openai.yaml
+```
+
+### Claude Code
+
+Use the repository-level guidance in:
+
+```text
+CLAUDE.md
+```
+
+For a project, copy or merge the `CLAUDE.md` guidance into that project's `CLAUDE.md` file. Keep any existing project-specific instructions and add this toolkit guidance as a short section.
+
+If your Claude Code setup supports user-level skills, clone this repository into your Claude skills directory:
+
+```bash
+git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.claude/skills/douyin-video-toolkit
+```
+
+## Usage
+
+### Quick Start
+
+In OpenClaw, ask for a concrete outcome:
+
+```text
+Download my Douyin live replay from last night, cut the highlight around 01:21:00, convert it to a vertical short video, add slow motion and subtitles, then prepare it for upload.
+```
+
+The intended workflow is:
+
+```text
+1. Extract or provide the replay M3U8 URL
+2. Download the replay with FFmpeg stream copy
+3. Analyze audio to locate likely highlights
+4. Cut the selected clip
+5. Convert the clip to 9:16 vertical video
+6. Add slow-motion effects
+7. Burn subtitles if needed
+8. Mix BGM if provided
+9. Prepare the upload page and stop before final publish
+```
+
+### Publishing Boundary
+
+This toolkit can help prepare a Douyin Creator Center draft:
+
+- open the Creator Center page
+- upload the rendered video
+- fill title, description, tags, category, and visibility fields according to the user's instructions
+- wait for platform checks to finish
+- report what is ready and what still needs review
+
+This toolkit should not:
+
+- click the final publish button
+- bypass account, login, or platform controls
+- publish without the user's direct review
+- download or reuse content the user is not authorized to process
+
+### Script Reference
+
+All scripts live in `scripts/`.
+
+```bash
+# Check local dependencies
+./scripts/check_env.sh
+
+# Download a live replay from an M3U8 URL
+./scripts/download_replay.sh "https://...m3u8" "my-live-replay"
+
+# Extract a clip
 ./scripts/extract_clip.sh source.mp4 01:21:40 01:22:40 clip.mp4
 
-# 慢放 + 竖屏（三段式拼接）
+# Create a slow-motion vertical video
 ./scripts/slowmo_vertical.sh clip.mp4 4 6.5 1.5 output.mp4
 
-# 添加 BGM
+# Add background music
 ./scripts/add_bgm.sh video.mp4 bgm.mp3 0.25 59 3.5 output.mp4
 ```
 
----
+Windows PowerShell equivalents:
 
-## 效果预览
+```powershell
+# Check local dependencies
+.\scripts\check_env.ps1
 
-| 处理前 | 处理后 |
-|--------|--------|
-| 横屏 1920×1080，111 分钟 | 竖屏 1080×1920，62 秒 |
-| 无字幕，原声 | ASS 字幕 + BGM 混音 |
-| 未剪辑，大量静音段 | 精准高光片段 + 慢动作 |
+# Download a live replay from an M3U8 URL
+.\scripts\download_replay.ps1 -M3U8Url "https://...m3u8" -OutputName "my-live-replay"
 
----
+# Extract a clip
+.\scripts\extract_clip.ps1 -InputVideo source.mp4 -StartTime 01:21:40 -EndTime 01:22:40 -Output clip.mp4
 
-## 文件说明
+# Create a slow-motion vertical video
+.\scripts\slowmo_vertical.ps1 -InputVideo clip.mp4 -SlowStart 4 -SlowEnd 6.5 -SlomoFactor 1.5 -Output output.mp4
 
+# Add background music
+.\scripts\add_bgm.ps1 -Video video.mp4 -Bgm bgm.mp3 -Volume 0.25 -FadeStart 59 -FadeDuration 3.5 -Output output.mp4
 ```
+
+## Output Example
+
+| Before | After |
+| --- | --- |
+| 1920x1080 landscape replay | 1080x1920 vertical short video |
+| Long replay with quiet sections | Focused highlight clip |
+| Raw audio only | Subtitles and optional BGM |
+| Normal playback | Optional three-part slow-motion segment |
+
+## Repository Layout
+
+```text
 douyin-video-toolkit/
-├── SKILL.md                          # AI 工作流（让 AI 知道怎么执行）
-├── README.md                         # 本文件
+├── agents/
+│   └── openai.yaml
+├── CLAUDE.md
+├── SKILL.md
+├── README.md
+├── README.zh-CN.md
+├── LICENSE
 ├── references/
-│   ├── ffmpeg-cookbook.md            # 完整 ffmpeg 命令手册
-│   ├── subtitles-guide.md            # ASS 字幕设计规范
-│   ├── troubleshooting.md            # 11 个常见故障及解决方案
-│   └── bgm-library.md               # 推荐 BGM 列表与下载源
+│   ├── ffmpeg-cookbook.md
+│   ├── subtitles-guide.md
+│   ├── troubleshooting.md
+│   └── bgm-library.md
 └── scripts/
-    ├── download_replay.sh            # M3U8 下载脚本
-    ├── extract_clip.sh               # 片段裁剪脚本
-    ├── slowmo_vertical.sh            # 慢放 + 竖屏一条龙
-    └── add_bgm.sh                    # BGM 混音脚本
+    ├── check_env.sh
+    ├── check_env.ps1
+    ├── download_replay.sh
+    ├── download_replay.ps1
+    ├── extract_clip.sh
+    ├── extract_clip.ps1
+    ├── slowmo_vertical.sh
+    ├── slowmo_vertical.ps1
+    ├── add_bgm.sh
+    └── add_bgm.ps1
 ```
 
----
+## Safety and Compliance
 
-## 常见问题
+- Only download, edit, and upload content you own or have explicit permission to use.
+- Use Douyin Creator Center with your own account and normal platform access. Do not bypass login, paywalls, access controls, rate limits, or anti-abuse systems.
+- Treat replay M3U8 URLs as temporary private access URLs. Do not publish them, commit them, or share logs that contain them.
+- Prefer BGM from Douyin's own music library or Creator Center music options. If an external audio file is used, the user must already have the right to use it.
+- Platform-available music can still have usage limits by region, account type, or monetization context; review the platform notice before publishing.
+- Do not remove creator watermarks, copyright notices, or attribution marks unless you own the content and have a legitimate reason.
+- Do not use the toolkit to impersonate other creators, repost unauthorized videos, or evade moderation.
+- Keep final publishing as a human-confirmed action.
+- When in doubt, keep the output as a local draft and verify rights before upload.
 
-| 问题 | 解决方案 |
-|------|----------|
-| ffmpeg 被 SIGKILL | 拆分步骤，避免单条命令跑太久 |
-| 字幕不显示 | `ffmpeg -filters \| grep ass` 检查 libass |
-| 手机听不到 BGM | 避免低频重低音，BGM 音量 25-35% |
-| macOS 无法打开文件 | `xattr -cr file.mp4` |
-| 话题标签出现在视频里 | 用 drawbox 遮盖，不要裁剪视频 |
+## References
 
-详见 [troubleshooting.md](references/troubleshooting.md)
-
----
-
-## 示例：一条命令生成竖屏短视频
-
-三段式慢放 + 竖屏 + 模糊背景：
-
-```bash
-./scripts/slowmo_vertical.sh clip_raw.mp4 4 6.5 1.5
-```
-
-- `4` — 慢放起始秒
-- `6.5` — 慢放结束秒
-- `1.5` — 慢放倍率
-
----
+- [FFmpeg cookbook](references/ffmpeg-cookbook.md)
+- [Subtitle guide](references/subtitles-guide.md)
+- [Troubleshooting](references/troubleshooting.md)
+- [BGM library](references/bgm-library.md)
+- [Claude Code guidance](CLAUDE.md)
 
 ## License
 
 MIT
-
----
-
-## 致谢
-
-- [FFmpeg](https://ffmpeg.org) — 视频处理核心
-- 抖音创作者平台 — 内容来源
-- OpenClaw — AI 自动化框架

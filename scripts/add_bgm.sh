@@ -16,6 +16,30 @@ command -v ffmpeg >/dev/null 2>&1 || {
   echo "❌ 需要安装 ffmpeg"
   exit 1
 }
+command -v ffprobe >/dev/null 2>&1 || {
+  echo "❌ 需要安装 ffprobe"
+  exit 1
+}
+
+if [ ! -f "$VIDEO" ]; then
+  echo "❌ 视频文件不存在: ${VIDEO}"
+  exit 1
+fi
+
+if [ ! -f "$BGM" ]; then
+  echo "❌ BGM 文件不存在: ${BGM}"
+  exit 1
+fi
+
+if ! ffprobe -v error -select_streams a:0 -show_entries stream=index -of csv=p=0 "${VIDEO}" | grep -q .; then
+  echo "❌ 视频没有音轨，无法与 BGM 混音"
+  exit 1
+fi
+
+OUTPUT_DIR=$(dirname "$OUTPUT")
+if [ "$OUTPUT_DIR" != "." ]; then
+  mkdir -p "$OUTPUT_DIR"
+fi
 
 echo "🎵 添加 BGM：${BGM}"
 echo "   音量: ${VOLUME}"

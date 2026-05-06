@@ -16,24 +16,40 @@ command -v ffmpeg >/dev/null 2>&1 || {
   exit 1
 }
 
-# 转换为秒数的辅助函数 (实现简单，生产环境建议用更健壮的解析)
+if [ ! -f "$INPUT" ]; then
+  echo "❌ 输入视频不存在: ${INPUT}"
+  exit 1
+fi
+
+# 转换为秒数，支持 HH:MM:SS(.ms)、MM:SS(.ms) 和秒数。
 to_seconds() {
   local t="$1"
-  if [[ "$t" =~ ^([0-9]+):([0-9]+):([0-9]+)$ ]]; then
+  if [[ "$t" =~ ^([0-9]+):([0-9]+):([0-9]+)(\.[0-9]+)?$ ]]; then
     # HH:MM:SS
-    echo "$(( BASH_REMATCH[1] * 3600 + BASH_REMATCH[2] * 60 + BASH_REMATCH[3] ))"
-  elif [[ "$t" =~ ^([0-9]+):([0-9]+)$ ]]; then
+    awk -v h="${BASH_REMATCH[1]}" -v m="${BASH_REMATCH[2]}" -v s="${BASH_REMATCH[3]}${BASH_REMATCH[4]}" 'BEGIN { printf "%.3f", h * 3600 + m * 60 + s }'
+  elif [[ "$t" =~ ^([0-9]+):([0-9]+)(\.[0-9]+)?$ ]]; then
     # MM:SS
-    echo "$(( BASH_REMATCH[1] * 60 + BASH_REMATCH[2] ))"
+    awk -v m="${BASH_REMATCH[1]}" -v s="${BASH_REMATCH[2]}${BASH_REMATCH[3]}" 'BEGIN { printf "%.3f", m * 60 + s }'
+  elif [[ "$t" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    printf "%.3f" "$t"
   else
-    # raw seconds
-    echo "$t"
+    echo "❌ 无效时间格式: ${t}" >&2
+    exit 1
   fi
 }
 
 START_SEC=$(to_seconds "$START")
 END_SEC=$(to_seconds "$END")
-DURATION=$(( END_SEC - START_SEC ))
+DURATION=$(awk -v start="$START_SEC" -v end="$END_SEC" 'BEGIN { printf "%.3f", end - start }')
+if awk -v duration="$DURATION" 'BEGIN { exit !(duration <= 0) }'; then
+  echo "❌ 结束时间必须晚于起始时间"
+  exit 1
+fi
+
+OUTPUT_DIR=$(dirname "$OUTPUT")
+if [ "$OUTPUT_DIR" != "." ]; then
+  mkdir -p "$OUTPUT_DIR"
+fi
 
 echo "📐 裁剪片段..."
 echo "   源文件: ${INPUT}"

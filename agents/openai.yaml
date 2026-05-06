@@ -1,0 +1,4 @@
+interface:
+  display_name: "Douyin Video Toolkit"
+  short_description: "Prepare Douyin replay clips and upload drafts"
+  default_prompt: "Use $douyin-video-toolkit to turn an authorized Douyin live replay into a vertical short-video draft without clicking final publish."
