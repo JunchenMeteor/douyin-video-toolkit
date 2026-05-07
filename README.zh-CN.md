@@ -47,7 +47,7 @@ Windows PowerShell：
 如果需要手动安装：
 
 ```bash
-git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.qclaw/skills/douyin-video-toolkit
+git clone https://github.com/JunchenMeteor/douyin-video-toolkit.git ~/.qclaw/skills/douyin-video-toolkit
 openclaw gateway restart
 ```
 
@@ -56,7 +56,7 @@ openclaw gateway restart
 把这个仓库复制或克隆到 Codex skills 目录：
 
 ```bash
-git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.codex/skills/douyin-video-toolkit
+git clone https://github.com/JunchenMeteor/douyin-video-toolkit.git ~/.codex/skills/douyin-video-toolkit
 ```
 
 需要时显式调用：
@@ -84,7 +84,7 @@ CLAUDE.md
 如果你的 Claude Code 环境支持用户级 skills，也可以把仓库克隆到 Claude skills 目录：
 
 ```bash
-git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.claude/skills/douyin-video-toolkit
+git clone https://github.com/JunchenMeteor/douyin-video-toolkit.git ~/.claude/skills/douyin-video-toolkit
 ```
 
 ## 使用
