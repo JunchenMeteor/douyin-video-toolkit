@@ -47,7 +47,7 @@ Install the douyin-video-toolkit skill
 If you prefer manual installation:
 
 ```bash
-git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.qclaw/skills/douyin-video-toolkit
+git clone https://github.com/JunchenMeteor/douyin-video-toolkit.git ~/.qclaw/skills/douyin-video-toolkit
 openclaw gateway restart
 ```
 
@@ -56,7 +56,7 @@ openclaw gateway restart
 Clone this repository into your Codex skills directory:
 
 ```bash
-git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.codex/skills/douyin-video-toolkit
+git clone https://github.com/JunchenMeteor/douyin-video-toolkit.git ~/.codex/skills/douyin-video-toolkit
 ```
 
 Then invoke it explicitly when needed:
@@ -84,7 +84,7 @@ For a project, copy or merge the `CLAUDE.md` guidance into that project's `CLAUD
 If your Claude Code setup supports user-level skills, clone this repository into your Claude skills directory:
 
 ```bash
-git clone https://github.com/qd1332543/douyin-video-toolkit.git ~/.claude/skills/douyin-video-toolkit
+git clone https://github.com/JunchenMeteor/douyin-video-toolkit.git ~/.claude/skills/douyin-video-toolkit
 ```
 
 ## Usage
